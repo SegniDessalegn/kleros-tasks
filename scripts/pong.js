@@ -27,6 +27,9 @@ function saveLastProcessedBlock(blockNumber) {
 }
 
 async function checkIfProcessed(blockNumber, lineReader) {
+    while (blockNumber > parseInt(lineReader.readNextLine(), 10)) {
+        await lineReader.moveToNextLine();
+    }
     const line = await lineReader.readNextLine();
     return line && parseInt(line, 10) === blockNumber;
 }
@@ -58,6 +61,7 @@ async function fetchMissedPings() {
                 await callPong(eventHash, event.blockNumber);
                 fs.writeFileSync('store/last-block.txt', event.blockNumber.toString());
                 fs.appendFileSync('store/all-blocks.txt', `${event.blockNumber.toString()}\n`);
+                lineReader.moveToNextLine();
             } catch (error) {
                 console.error("Error processing Ping event:", error);
                 console.error("STOPPED AT", eventHash);
@@ -66,15 +70,14 @@ async function fetchMissedPings() {
         } else {
             console.log(`Ping at block ${event.blockNumber} already processed.`);
         }
-        lineReader.moveToNextLine();
     }
 }
 
 async function callPong(eventHash, blockNumber) {
     console.log("Calling pong...", eventHash, blockNumber);
-    // const tx = await contract.pong(eventHash);
-    // console.log("Pong transaction sent:", tx.hash);
-    // await tx.wait();
+    const tx = await contract.pong(eventHash);
+    console.log("Pong transaction sent:", tx.hash);
+    await tx.wait();
     console.log("Pong transaction confirmed.");
 }
 
@@ -98,9 +101,12 @@ async function listenForPing() {
 }
 
 async function main() {
-    setInterval(async () => {
+    (async () => {
         await fetchMissedPings();
-    }, 1000 * 60 * 5);
+        setInterval(async () => {
+            await fetchMissedPings();
+        }, 1000 * 60 * 60);
+    })();
     listenForPing();
 }
 
