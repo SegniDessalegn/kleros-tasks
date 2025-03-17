@@ -19,7 +19,7 @@ function getLastProcessedBlock() {
     if (fs.existsSync("store/last-block.txt")) {
         return parseInt(fs.readFileSync("store/last-block.txt", 'utf8'), 10);
     }
-    return 0;
+    return NaN;
 }
 
 function saveLastProcessedBlock(blockNumber) {
@@ -37,11 +37,10 @@ async function checkIfProcessed(blockNumber, lineReader) {
 async function fetchMissedPings() {
     const blocksFilePath = 'store/blocks.txt';
     const lineReader = createLineReader(blocksFilePath);
-
     let fromBlock = 1 + getLastProcessedBlock();
     const latestBlock = await provider.getBlockNumber();
 
-    if (fromBlock === NaN) {
+    if (isNaN(fromBlock)) {
         return;
     }
 
@@ -60,6 +59,7 @@ async function fetchMissedPings() {
             try {
                 await callPong(eventHash, event.blockNumber);
                 fs.writeFileSync('store/last-block.txt', event.blockNumber.toString());
+                fs.appendFileSync('store/transactions.txt', `${eventHash}\n`);
                 fs.appendFileSync('store/all-blocks.txt', `${event.blockNumber.toString()}\n`);
                 lineReader.moveToNextLine();
             } catch (error) {
