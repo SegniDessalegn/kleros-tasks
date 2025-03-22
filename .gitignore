@@ -1,3 +1,5 @@
 node_modules
 .env
-store
+store/temp-blocks.txt
+store/transactions.txt
+store/all-blocks.txt

@@ -35,7 +35,7 @@ async function checkIfProcessed(blockNumber, lineReader) {
 }
 
 async function fetchMissedPings() {
-    const blocksFilePath = 'store/blocks.txt';
+    const blocksFilePath = 'store/temp-blocks.txt';
     const lineReader = createLineReader(blocksFilePath);
     let fromBlock = 1 + getLastProcessedBlock();
     const latestBlock = await provider.getBlockNumber();
@@ -93,7 +93,7 @@ async function listenForPing() {
             console.log("Transaction Block Number:", blockNumber);
             await callPong(eventHash, blockNumber);
             fs.appendFileSync('store/transactions.txt', `${eventHash}\n`);
-            fs.appendFileSync('store/blocks.txt', `${blockNumber}\n`);
+            fs.appendFileSync('store/temp-blocks.txt', `${blockNumber}\n`);
         } catch (error) {
             console.error("Error processing Ping event:", error);
         }
