@@ -1,5 +1,2 @@
 node_modules
 .env
-store/temp-blocks.txt
-store/transactions.txt
-store/all-blocks.txt
